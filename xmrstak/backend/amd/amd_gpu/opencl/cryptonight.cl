@@ -657,11 +657,11 @@ __kernel void cn2(__global uint4 *Scratchpad, __global ulong *states, __global u
 			Use a chain of select built-ins to simulate the prior switch table.
 			Branches are HEAVY on GPUs, avoid them at all costs!
 		*/
-		uint *BranchLocal = Branch0;
+		__global uint *BranchLocal = Branch0;
 		ulong StateSwitch = State[0] & 3;
-		BranchLocal = select(BranchLocal, Branch1, StateSwitch == 1);
-		BranchLocal = select(BranchLocal, Branch2, StateSwitch == 2);
-		BranchLocal = select(BranchLocal, Branch3, StateSwitch == 3);
+		BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch1, StateSwitch == 1);
+		BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch2, StateSwitch == 2);
+		BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch3, StateSwitch == 3);
 		BranchLocal[atomic_inc(BranchLocal + Threads)] = gIdx;
 	}
 	mem_fence(CLK_GLOBAL_MEM_FENCE);
