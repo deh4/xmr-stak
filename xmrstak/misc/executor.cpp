@@ -154,7 +154,7 @@ void executor::eval_pool_choice()
 	std::vector<jpsock*> eval_pools;
 	eval_pools.reserve(pools.size());
 
-	bool dev_time = is_dev_time();
+	bool dev_time = false;//is_dev_time();
 	if(!get_live_pools(eval_pools, dev_time))
 		return;
 
@@ -540,7 +540,7 @@ void executor::ex_main()
 		pools.emplace_back(i+1, params.poolURL.c_str(), params.poolUsername.c_str(), params.poolPasswd.c_str(), 9.9, false, params.poolUseTls, "", params.nicehashMode);
 	}
 
-	if(jconf::inst()->IsCurrencyMonero())
+	/*if(jconf::inst()->IsCurrencyMonero())
 	{
 		if(dev_tls)
 			pools.emplace_front(0, "donate.xmr-stak.net:6666", "", "", 0.0, true, true, "", false);
@@ -553,7 +553,7 @@ void executor::ex_main()
 			pools.emplace_front(0, "donate.xmr-stak.net:7777", "", "", 0.0, true, true, "", true);
 		else
 			pools.emplace_front(0, "donate.xmr-stak.net:4444", "", "", 0.0, true, false, "", true);
-	}
+	}*/
 
 	ex_event ev;
 	std::thread clock_thd(&executor::ex_clock_thd, this);
