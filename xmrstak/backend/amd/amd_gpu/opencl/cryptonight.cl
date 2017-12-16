@@ -643,32 +643,26 @@ __kernel void cn2(__global uint4 *Scratchpad, __global ulong *states, __global u
 	barrier(CLK_GLOBAL_MEM_FENCE);
 
 	// do not use early return here
-	if(gIdx < Threads)
+	// Fold branches, as GPUs are DUMB.
+	if(gIdx < Threads 
+		&& !get_local_id(1))
 	{
-		if(!get_local_id(1))
-		{
-			for(int i = 0; i < 25; ++i) State[i] = states[i];
+		for(int i = 0; i < 25; ++i) State[i] = states[i];
 
-			keccakf1600_2(State);
+		keccakf1600_2(State);
 
-			for(int i = 0; i < 25; ++i) states[i] = State[i];
+		for(int i = 0; i < 25; ++i) states[i] = State[i];
 
-			switch(State[0] & 3)
-			{
-				case 0:
-					Branch0[atomic_inc(Branch0 + Threads)] = get_global_id(0) - get_global_offset(0);
-					break;
-				case 1:
-					Branch1[atomic_inc(Branch1 + Threads)] = get_global_id(0) - get_global_offset(0);
-					break;
-				case 2:
-					Branch2[atomic_inc(Branch2 + Threads)] = get_global_id(0) - get_global_offset(0);
-					break;
-				case 3:
-					Branch3[atomic_inc(Branch3 + Threads)] = get_global_id(0) - get_global_offset(0);
-					break;
-			}
-		}
+		/*
+			Use a chain of select built-ins to simulate the prior switch table.
+			Branches are HEAVY on GPUs, avoid them at all costs!
+		*/
+		uint *BranchLocal = Branch0;
+		ulong StateSwitch = State[0] & 3;
+		BranchLocal = select(BranchLocal, Branch1, StateSwitch == 1);
+		BranchLocal = select(BranchLocal, Branch2, StateSwitch == 2);
+		BranchLocal = select(BranchLocal, Branch3, StateSwitch == 3);
+		BranchLocal[atomic_inc(BranchLocal + Threads)] = gIdx;
 	}
 	mem_fence(CLK_GLOBAL_MEM_FENCE);
 }
