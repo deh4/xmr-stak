@@ -467,13 +467,9 @@ __kernel void cn0(__global ulong *input, __global uint4 *Scratchpad, __global ul
 		State[16] = 0x8000000000000000UL;
 
 		keccakf1600_2(State);
-	}
+		
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 
-	mem_fence(CLK_GLOBAL_MEM_FENCE);
-
-	// do not use early return here
-	if(gIdx < Threads)
-	{
 		#pragma unroll
 		for(int i = 0; i < 25; ++i) states[i] = State[i];
 
@@ -483,13 +479,9 @@ __kernel void cn0(__global ulong *input, __global uint4 *Scratchpad, __global ul
 		for(int i = 0; i < 4; ++i) ((ulong *)ExpandedKey1)[i] = states[i];
 
 		AESExpandKey256(ExpandedKey1);
-	}
 
-	mem_fence(CLK_LOCAL_MEM_FENCE);
+		mem_fence(CLK_LOCAL_MEM_FENCE);
 
-	// do not use early return here
-	if(gIdx < Threads)
-	{
 		#pragma unroll 2
 		for(int i = 0; i < (ITERATIONS >> 5); ++i)
 		{
@@ -499,8 +491,8 @@ __kernel void cn0(__global ulong *input, __global uint4 *Scratchpad, __global ul
 
 			Scratchpad[IDX((i << 3) + get_local_id(1))] = text;
 		}
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 	}
-	mem_fence(CLK_GLOBAL_MEM_FENCE);
 }
 
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
@@ -540,13 +532,9 @@ __kernel void cn1(__global uint4 *Scratchpad, __global ulong *states, ulong Thre
 		b[1] = states[3] ^ states[7];
 
 		b_x = ((uint4 *)b)[0];
-	}
 
-	mem_fence(CLK_LOCAL_MEM_FENCE);
+		mem_fence(CLK_LOCAL_MEM_FENCE);
 
-	// do not use early return here
-	if(gIdx < Threads)
-	{
 		#pragma unroll 8
 		for(int i = 0; i < ITERATIONS; ++i)
 		{
@@ -570,8 +558,8 @@ __kernel void cn1(__global uint4 *Scratchpad, __global ulong *states, ulong Thre
 
 			b_x = ((uint4 *)c)[0];
 		}
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 	}
-	mem_fence(CLK_GLOBAL_MEM_FENCE);
 }
 
 __attribute__((reqd_work_group_size(WORKSIZE, 8, 1)))
@@ -620,13 +608,9 @@ __kernel void cn2(__global uint4 *Scratchpad, __global ulong *states, __global u
 		#endif
 
 		AESExpandKey256(ExpandedKey2);
-	}
 
-	barrier(CLK_LOCAL_MEM_FENCE);
+		barrier(CLK_LOCAL_MEM_FENCE);
 
-	// do not use early return here
-	if(gIdx < Threads)
-	{
 		#pragma unroll 2
 		for(int i = 0; i < (ITERATIONS >> 5); ++i)
 		{
@@ -638,33 +622,30 @@ __kernel void cn2(__global uint4 *Scratchpad, __global ulong *states, __global u
 		}
 
 		vstore2(as_ulong2(text), get_local_id(1) + 4, states);
+
+		barrier(CLK_GLOBAL_MEM_FENCE);
+
+		if(!get_local_id(1))
+		{
+			for(int i = 0; i < 25; ++i) State[i] = states[i];
+
+			keccakf1600_2(State);
+
+			for(int i = 0; i < 25; ++i) states[i] = State[i];
+
+			/*
+				Use a chain of select built-ins to simulate the prior switch table.
+				Branches are HEAVY on GPUs, avoid them at all costs!
+			*/
+			__global uint *BranchLocal = Branch0;
+			ulong StateSwitch = State[0] & 3;
+			BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch1, StateSwitch == 1);
+			BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch2, StateSwitch == 2);
+			BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch3, StateSwitch == 3);
+			BranchLocal[atomic_inc(BranchLocal + Threads)] = gIdx;
+		}
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 	}
-
-	barrier(CLK_GLOBAL_MEM_FENCE);
-
-	// do not use early return here
-	// Fold branches, as GPUs are DUMB.
-	if(gIdx < Threads 
-		&& !get_local_id(1))
-	{
-		for(int i = 0; i < 25; ++i) State[i] = states[i];
-
-		keccakf1600_2(State);
-
-		for(int i = 0; i < 25; ++i) states[i] = State[i];
-
-		/*
-			Use a chain of select built-ins to simulate the prior switch table.
-			Branches are HEAVY on GPUs, avoid them at all costs!
-		*/
-		__global uint *BranchLocal = Branch0;
-		ulong StateSwitch = State[0] & 3;
-		BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch1, StateSwitch == 1);
-		BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch2, StateSwitch == 2);
-		BranchLocal = (__global uint *)select((uint)BranchLocal, (uint)Branch3, StateSwitch == 3);
-		BranchLocal[atomic_inc(BranchLocal + Threads)] = gIdx;
-	}
-	mem_fence(CLK_GLOBAL_MEM_FENCE);
 }
 
 )==="
@@ -732,8 +713,8 @@ __kernel void Skein(__global ulong *states, __global uint *BranchBuf, __global u
 			if(outIdx < 0xFF)
 				output[outIdx] = BranchBuf[idx] + get_global_offset(0);
 		}
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 	}
-	mem_fence(CLK_GLOBAL_MEM_FENCE);	
 }
 
 #define SWAP8(x)	as_ulong(as_uchar8(x).s76543210)
