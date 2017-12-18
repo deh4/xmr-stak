@@ -710,8 +710,7 @@ __kernel void Skein(__global ulong *states, __global uint *BranchBuf, __global u
 		if(p.s3 <= Target)
 		{
 			ulong outIdx = atomic_inc(output + 0xFF);
-			if(outIdx < 0xFF)
-				output[outIdx] = BranchBuf[idx] + get_global_offset(0);
+			output[outIdx] = select((uint)outIdx, (uint)(BranchBuf[idx] + get_global_offset(0)), outIdx < 0xFF);
 		}
 		mem_fence(CLK_GLOBAL_MEM_FENCE);
 	}
@@ -784,8 +783,7 @@ __kernel void JH(__global ulong *states, __global uint *BranchBuf, __global uint
 		if(h7l <= Target)
 		{
 			ulong outIdx = atomic_inc(output + 0xFF);
-			if(outIdx < 0xFF)
-				output[outIdx] = BranchBuf[idx] + get_global_offset(0);
+			output[outIdx] = select((uint)outIdx, (uint)(BranchBuf[idx] + get_global_offset(0)), outIdx < 0xFF);
 		}
 	}
 }
@@ -861,8 +859,7 @@ __kernel void Blake(__global ulong *states, __global uint *BranchBuf, __global u
 		if( as_ulong(t) <= Target)
 		{
 			ulong outIdx = atomic_inc(output + 0xFF);
-			if(outIdx < 0xFF)
-				output[outIdx] = BranchBuf[idx] + get_global_offset(0);
+			output[outIdx] = select((uint)outIdx, (uint)(BranchBuf[idx] + get_global_offset(0)), outIdx < 0xFF);
 		}
 	}
 }
@@ -921,8 +918,7 @@ __kernel void Groestl(__global ulong *states, __global uint *BranchBuf, __global
 		if(State[7] <= Target)
 		{
 			ulong outIdx = atomic_inc(output + 0xFF);
-			if(outIdx < 0xFF)
-				output[outIdx] = BranchBuf[idx] + get_global_offset(0);
+			output[outIdx] = select((uint)outIdx, (uint)(BranchBuf[idx] + get_global_offset(0)), outIdx < 0xFF);
 		}
 	}
 }
