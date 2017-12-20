@@ -402,12 +402,12 @@ void AESExpandKey256(uint *keybuf)
 	for(uint c = 8, i = 1; c < 60; ++c)
 	{
 		// For 256-bit keys, an sbox permutation is done every other 4th uint generated, AND every 8th
-		uint t = ((!(c & 7)) || ((c & 7) == 4)) ? SubWord(keybuf[c - 1]) : keybuf[c - 1];
+		uint t = select(keybuf[c - 1], (uint)SubWord(keybuf[c - 1]), (c & 3) == 0);
 		
 		// If the uint we're generating has an index that is a multiple of 8, rotate and XOR with the round constant,
 		// then XOR this with previously generated uint. If it's 4 after a multiple of 8, only the sbox permutation
 		// is done, followed by the XOR. If neither are true, only the XOR with the previously generated uint is done.
-		keybuf[c] = keybuf[c - 8] ^ ((!(c & 7)) ? rotate(t, 24U) ^ as_uint((uchar4)(rcon[i++], 0U, 0U, 0U)) : t);
+		keybuf[c] = keybuf[c - 8] ^ select(rotate(t, 24U) ^ as_uint((uchar4)(rcon[i++], 0U, 0U, 0U)), t, c & 7);
 	}
 }
 
