@@ -662,10 +662,6 @@ R"===(
 __kernel void Skein(__global ulong *states, __global uint *BranchBuf, __global uint *output, ulong Target, ulong Threads)
 {
 	const ulong idx = get_global_id(0) - get_global_offset(0);
-	const ulong tConst1 = 0x40UL;
-	const ulong tConst2 = 0x08UL;
-	const ulong tConst3 = 0x3000000000000000UL;
-	const ulong tConst4 = 0xB000000000000000UL;
 	
 	// do not use early return here
 	if(idx < Threads)
@@ -685,7 +681,7 @@ __kernel void Skein(__global ulong *states, __global uint *BranchBuf, __global u
 
 		for(uint i = 0; i < 4; ++i)
 		{
-			t[0] += select(tConst2, tConst1, i < 3);
+			t[0] += 0x08UL << ((i < 3) << 3);
 
 			t[2] = t[0] ^ t[1];
 
@@ -695,7 +691,7 @@ __kernel void Skein(__global ulong *states, __global uint *BranchBuf, __global u
 
 			h = m ^ p;
 
-			t[1] = select(tConst4, tConst3, i < 2);
+			t[1] = 0x3000000000000000UL | ((i >= 3) << 63);
 		}
 
 		t[0] = 0x08UL;
