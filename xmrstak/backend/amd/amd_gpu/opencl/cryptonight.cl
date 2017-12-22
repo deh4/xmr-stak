@@ -681,7 +681,7 @@ __kernel void Skein(__global ulong *states, __global uint *BranchBuf, __global u
 
 		for(uint i = 0; i < 4; ++i)
 		{
-			t[0] += 0x08UL << ((i < 3) << 3);
+			t[0] += 0x08UL << ((i < 3) * 3);
 
 			t[2] = t[0] ^ t[1];
 
