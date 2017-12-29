@@ -124,167 +124,233 @@ static inline void aes_genkey(const __m128i* memory, __m128i* k0, __m128i* k1, _
 	*k9 = xout2;
 }
 
-static inline void aes_round(__m128i key, __m128i* x0, __m128i* x1, __m128i* x2, __m128i* x3, __m128i* x4, __m128i* x5, __m128i* x6, __m128i* x7)
+static inline void aes_round(__m128i key, __m256i* x0, __m256i* x1, __m256i* x2, __m256i* x3)
 {
-	*x0 = _mm_aesenc_si128(*x0, key);
-	*x1 = _mm_aesenc_si128(*x1, key);
-	*x2 = _mm_aesenc_si128(*x2, key);
-	*x3 = _mm_aesenc_si128(*x3, key);
-	*x4 = _mm_aesenc_si128(*x4, key);
-	*x5 = _mm_aesenc_si128(*x5, key);
-	*x6 = _mm_aesenc_si128(*x6, key);
-	*x7 = _mm_aesenc_si128(*x7, key);
+	__m128i temp0;
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x0, 0);
+	//Process the low 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store first 128:
+	*x0 = _mm256_inserti128_si256(*x0, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x0, 1);
+	//Process the high 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store second 128:
+	*x0 = _mm256_inserti128_si256(*x0, temp0, 1);
+	
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x1, 0);
+	//Process the low 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store first 128:
+	*x1 = _mm256_inserti128_si256(*x1, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x1, 1);
+	//Process the high 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store second 128:
+	*x1 = _mm256_inserti128_si256(*x1, temp0, 1);
+	
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x2, 0);
+	//Process the low 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store first 128:
+	*x2 = _mm256_inserti128_si256(*x2, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x2, 1);
+	//Process the high 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store second 128:
+	*x2 = _mm256_inserti128_si256(*x2, temp0, 1);
+	
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x3, 0);
+	//Process the low 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store first 128:
+	*x3 = _mm256_inserti128_si256(*x3, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x3, 1);
+	//Process the high 128:
+	temp0 = _mm_aesenc_si128(temp0, key);
+	//Store second 128:
+	*x3 = _mm256_inserti128_si256(*x3, temp0, 1);
 }
 
-static inline void soft_aes_round(__m128i key, __m128i* x0, __m128i* x1, __m128i* x2, __m128i* x3, __m128i* x4, __m128i* x5, __m128i* x6, __m128i* x7)
+static inline void soft_aes_round(__m128i key, __m256i* x0, __m256i* x1, __m256i* x2, __m256i* x3)
 {
-	*x0 = soft_aesenc(*x0, key);
-	*x1 = soft_aesenc(*x1, key);
-	*x2 = soft_aesenc(*x2, key);
-	*x3 = soft_aesenc(*x3, key);
-	*x4 = soft_aesenc(*x4, key);
-	*x5 = soft_aesenc(*x5, key);
-	*x6 = soft_aesenc(*x6, key);
-	*x7 = soft_aesenc(*x7, key);
+	__m128i temp0;
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x0, 0);
+	//Process the low 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store first 128:
+	*x0 = _mm256_inserti128_si256(*x0, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x0, 1);
+	//Process the high 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store second 128:
+	*x0 = _mm256_inserti128_si256(*x0, temp0, 1);
+	
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x1, 0);
+	//Process the low 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store first 128:
+	*x1 = _mm256_inserti128_si256(*x1, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x1, 1);
+	//Process the high 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store second 128:
+	*x1 = _mm256_inserti128_si256(*x1, temp0, 1);
+	
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x2, 0);
+	//Process the low 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store first 128:
+	*x2 = _mm256_inserti128_si256(*x2, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x2, 1);
+	//Process the high 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store second 128:
+	*x2 = _mm256_inserti128_si256(*x2, temp0, 1);
+	
+	//Obtain the low 128:
+	temp0 = _mm256_extracti128_si256(*x3, 0);
+	//Process the low 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store first 128:
+	*x3 = _mm256_inserti128_si256(*x3, temp0, 0);
+	//Obtain the high 128:
+	temp0 = _mm256_extracti128_si256(*x3, 1);
+	//Process the high 128:
+	temp0 = soft_aesenc(temp0, key);
+	//Store second 128:
+	*x3 = _mm256_inserti128_si256(*x3, temp0, 1);
 }
 
 template<size_t MEM, bool SOFT_AES, bool PREFETCH>
-void cn_explode_scratchpad(const __m128i* input, __m128i* output)
+void cn_explode_scratchpad(const __m256i* input, __m256i* output)
 {
-	// This is more than we have registers, compiler will assign 2 keys on the stack
-	__m128i xin0, xin1, xin2, xin3, xin4, xin5, xin6, xin7;
+	__m256i xin0, xin1, xin2, xin3;
 	__m128i k0, k1, k2, k3, k4, k5, k6, k7, k8, k9;
 
-	aes_genkey<SOFT_AES>(input, &k0, &k1, &k2, &k3, &k4, &k5, &k6, &k7, &k8, &k9);
+	aes_genkey<SOFT_AES>((__m128i*)input, &k0, &k1, &k2, &k3, &k4, &k5, &k6, &k7, &k8, &k9);
 
-	xin0 = _mm_load_si128(input + 4);
-	xin1 = _mm_load_si128(input + 5);
-	xin2 = _mm_load_si128(input + 6);
-	xin3 = _mm_load_si128(input + 7);
-	xin4 = _mm_load_si128(input + 8);
-	xin5 = _mm_load_si128(input + 9);
-	xin6 = _mm_load_si128(input + 10);
-	xin7 = _mm_load_si128(input + 11);
+	xin0 = _mm256_load_si256(input + 2);
+	xin1 = _mm256_load_si256(input + 3);
+	xin2 = _mm256_load_si256(input + 4);
+	xin3 = _mm256_load_si256(input + 5);
 
-	for (size_t i = 0; i < MEM / sizeof(__m128i); i += 8)
+	for (size_t i = 0; i < MEM / sizeof(__m256i); i += 4)
 	{
 		if(SOFT_AES)
 		{
-			soft_aes_round(k0, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k1, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k2, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k3, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k4, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k5, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k6, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k7, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k8, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			soft_aes_round(k9, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
+			soft_aes_round(k0, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k1, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k2, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k3, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k4, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k5, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k6, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k7, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k8, &xin0, &xin1, &xin2, &xin3);
+			soft_aes_round(k9, &xin0, &xin1, &xin2, &xin3);
 		}
 		else
 		{
-			aes_round(k0, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k1, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k2, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k3, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k4, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k5, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k6, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k7, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k8, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
-			aes_round(k9, &xin0, &xin1, &xin2, &xin3, &xin4, &xin5, &xin6, &xin7);
+			aes_round(k0, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k1, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k2, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k3, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k4, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k5, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k6, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k7, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k8, &xin0, &xin1, &xin2, &xin3);
+			aes_round(k9, &xin0, &xin1, &xin2, &xin3);
 		}
 
-		_mm_store_si128(output + i + 0, xin0);
-		_mm_store_si128(output + i + 1, xin1);
-		_mm_store_si128(output + i + 2, xin2);
-		_mm_store_si128(output + i + 3, xin3);
+		_mm256_store_si256(output + i + 0, xin0);
+		_mm256_store_si256(output + i + 1, xin1);
 
 		if(PREFETCH)
-			_mm_prefetch((const char*)output + i + 0, _MM_HINT_T2);
+			_mm_prefetch((const char*)output + (i << 1), _MM_HINT_T2);
 
-		_mm_store_si128(output + i + 4, xin4);
-		_mm_store_si128(output + i + 5, xin5);
-		_mm_store_si128(output + i + 6, xin6);
-		_mm_store_si128(output + i + 7, xin7);
+		_mm256_store_si256(output + i + 2, xin2);
+		_mm256_store_si256(output + i + 3, xin3);
 
 		if(PREFETCH)
-			_mm_prefetch((const char*)output + i + 4, _MM_HINT_T2);
+			_mm_prefetch((const char*)output + (i << 1) + 4, _MM_HINT_T2);
 	}
 }
 
 template<size_t MEM, bool SOFT_AES, bool PREFETCH>
-void cn_implode_scratchpad(const __m128i* input, __m128i* output)
+void cn_implode_scratchpad(const __m256i* input, __m256i* output)
 {
-	// This is more than we have registers, compiler will assign 2 keys on the stack
-	__m128i xout0, xout1, xout2, xout3, xout4, xout5, xout6, xout7;
+	__m256i xout0, xout1, xout2, xout3;
 	__m128i k0, k1, k2, k3, k4, k5, k6, k7, k8, k9;
 
-	aes_genkey<SOFT_AES>(output + 2, &k0, &k1, &k2, &k3, &k4, &k5, &k6, &k7, &k8, &k9);
+	aes_genkey<SOFT_AES>(((__m128i*)output) + 2, &k0, &k1, &k2, &k3, &k4, &k5, &k6, &k7, &k8, &k9);
 
-	xout0 = _mm_load_si128(output + 4);
-	xout1 = _mm_load_si128(output + 5);
-	xout2 = _mm_load_si128(output + 6);
-	xout3 = _mm_load_si128(output + 7);
-	xout4 = _mm_load_si128(output + 8);
-	xout5 = _mm_load_si128(output + 9);
-	xout6 = _mm_load_si128(output + 10);
-	xout7 = _mm_load_si128(output + 11);
+	xout0 = _mm256_load_si256(input + 2);
+	xout1 = _mm256_load_si256(input + 3);
+	xout2 = _mm256_load_si256(input + 4);
+	xout3 = _mm256_load_si256(input + 5);
 
-	for (size_t i = 0; i < MEM / sizeof(__m128i); i += 8)
+	for (size_t i = 0; i < MEM / sizeof(__m256i); i += 4)
 	{
 		if(PREFETCH)
-			_mm_prefetch((const char*)input + i + 0, _MM_HINT_NTA);
+			_mm_prefetch((const char*)input + (i << 1), _MM_HINT_NTA);
 
-		xout0 = _mm_xor_si128(_mm_load_si128(input + i + 0), xout0);
-		xout1 = _mm_xor_si128(_mm_load_si128(input + i + 1), xout1);
-		xout2 = _mm_xor_si128(_mm_load_si128(input + i + 2), xout2);
-		xout3 = _mm_xor_si128(_mm_load_si128(input + i + 3), xout3);
+		xout0 = _mm256_xor_si256(_mm256_load_si256(input + i + 0), xout0);
+		xout1 = _mm256_xor_si256(_mm256_load_si256(input + i + 1), xout1);
 
 		if(PREFETCH)
-			_mm_prefetch((const char*)input + i + 4, _MM_HINT_NTA);
+			_mm_prefetch((const char*)input + (i << 1) + 4, _MM_HINT_NTA);
 
-		xout4 = _mm_xor_si128(_mm_load_si128(input + i + 4), xout4);
-		xout5 = _mm_xor_si128(_mm_load_si128(input + i + 5), xout5);
-		xout6 = _mm_xor_si128(_mm_load_si128(input + i + 6), xout6);
-		xout7 = _mm_xor_si128(_mm_load_si128(input + i + 7), xout7);
+		xout2 = _mm256_xor_si256(_mm256_load_si256(input + i + 2), xout2);
+		xout3 = _mm256_xor_si256(_mm256_load_si256(input + i + 3), xout3);
 
 		if(SOFT_AES)
 		{
-			soft_aes_round(k0, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k1, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k2, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k3, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k4, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k5, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k6, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k7, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k8, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			soft_aes_round(k9, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
+			soft_aes_round(k0, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k1, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k2, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k3, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k4, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k5, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k6, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k7, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k8, &xout0, &xout1, &xout2, &xout3);
+			soft_aes_round(k9, &xout0, &xout1, &xout2, &xout3);
 		}
 		else
 		{
-			aes_round(k0, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k1, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k2, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k3, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k4, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k5, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k6, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k7, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k8, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
-			aes_round(k9, &xout0, &xout1, &xout2, &xout3, &xout4, &xout5, &xout6, &xout7);
+			aes_round(k0, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k1, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k2, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k3, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k4, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k5, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k6, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k7, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k8, &xout0, &xout1, &xout2, &xout3);
+			aes_round(k9, &xout0, &xout1, &xout2, &xout3);
 		}
 	}
 
-	_mm_store_si128(output + 4, xout0);
-	_mm_store_si128(output + 5, xout1);
-	_mm_store_si128(output + 6, xout2);
-	_mm_store_si128(output + 7, xout3);
-	_mm_store_si128(output + 8, xout4);
-	_mm_store_si128(output + 9, xout5);
-	_mm_store_si128(output + 10, xout6);
-	_mm_store_si128(output + 11, xout7);
+	_mm256_store_si256(output + 2, xout0);
+	_mm256_store_si256(output + 3, xout1);
+	_mm256_store_si256(output + 4, xout2);
+	_mm256_store_si256(output + 5, xout3);
 }
 
 template<size_t MASK, size_t ITERATIONS, size_t MEM, bool SOFT_AES, bool PREFETCH>
@@ -293,7 +359,7 @@ void cryptonight_hash(const void* input, size_t len, void* output, cryptonight_c
 	keccak((const uint8_t *)input, len, ctx0->hash_state, 200);
 
 	// Optim - 99% time boundary
-	cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx0->hash_state, (__m128i*)ctx0->long_state);
+	cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx0->hash_state, (__m256i*)ctx0->long_state);
 
 	uint8_t* l0 = ctx0->long_state;
 	uint64_t* h0 = (uint64_t*)ctx0->hash_state;
@@ -341,7 +407,7 @@ void cryptonight_hash(const void* input, size_t len, void* output, cryptonight_c
 	}
 
 	// Optim - 90% time boundary
-	cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx0->long_state, (__m128i*)ctx0->hash_state);
+	cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx0->long_state, (__m256i*)ctx0->hash_state);
 
 	// Optim - 99% time boundary
 
@@ -359,8 +425,8 @@ void cryptonight_double_hash(const void* input, size_t len, void* output, crypto
 	keccak((const uint8_t *)input+len, len, ctx[1]->hash_state, 200);
 
 	// Optim - 99% time boundary
-	cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[0]->hash_state, (__m128i*)ctx[0]->long_state);
-	cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[1]->hash_state, (__m128i*)ctx[1]->long_state);
+	cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[0]->hash_state, (__m256i*)ctx[0]->long_state);
+	cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[1]->hash_state, (__m256i*)ctx[1]->long_state);
 
 	uint8_t* l0 = ctx[0]->long_state;
 	uint64_t* h0 = (uint64_t*)ctx[0]->hash_state;
@@ -444,8 +510,8 @@ void cryptonight_double_hash(const void* input, size_t len, void* output, crypto
 	}
 
 	// Optim - 90% time boundary
-	cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[0]->long_state, (__m128i*)ctx[0]->hash_state);
-	cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[1]->long_state, (__m128i*)ctx[1]->hash_state);
+	cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[0]->long_state, (__m256i*)ctx[0]->hash_state);
+	cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[1]->long_state, (__m256i*)ctx[1]->hash_state);
 
 	// Optim - 99% time boundary
 
@@ -490,7 +556,7 @@ void cryptonight_triple_hash(const void* input, size_t len, void* output, crypto
 	for (size_t i = 0; i < 3; i++)
 	{
 		keccak((const uint8_t *)input + len * i, len, ctx[i]->hash_state, 200);
-		cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->hash_state, (__m128i*)ctx[i]->long_state);
+		cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[i]->hash_state, (__m256i*)ctx[i]->long_state);
 	}
 
 	uint8_t* l0 = ctx[0]->long_state;
@@ -552,7 +618,7 @@ void cryptonight_triple_hash(const void* input, size_t len, void* output, crypto
 
 	for (size_t i = 0; i < 3; i++)
 	{
-		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->long_state, (__m128i*)ctx[i]->hash_state);
+		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[i]->long_state, (__m256i*)ctx[i]->hash_state);
 		keccakf((uint64_t*)ctx[i]->hash_state, 24);
 		extra_hashes[ctx[i]->hash_state[0] & 3](ctx[i]->hash_state, 200, (char*)output + 32 * i);
 	}
@@ -565,7 +631,7 @@ void cryptonight_quad_hash(const void* input, size_t len, void* output, cryptoni
 	for (size_t i = 0; i < 4; i++)
 	{
 		keccak((const uint8_t *)input + len * i, len, ctx[i]->hash_state, 200);
-		cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->hash_state, (__m128i*)ctx[i]->long_state);
+		cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[i]->hash_state, (__m256i*)ctx[i]->long_state);
 	}
 
 	uint8_t* l0 = ctx[0]->long_state;
@@ -640,7 +706,7 @@ void cryptonight_quad_hash(const void* input, size_t len, void* output, cryptoni
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->long_state, (__m128i*)ctx[i]->hash_state);
+		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[i]->long_state, (__m256i*)ctx[i]->hash_state);
 		keccakf((uint64_t*)ctx[i]->hash_state, 24);
 		extra_hashes[ctx[i]->hash_state[0] & 3](ctx[i]->hash_state, 200, (char*)output + 32 * i);
 	}
@@ -653,7 +719,7 @@ void cryptonight_penta_hash(const void* input, size_t len, void* output, crypton
 	for (size_t i = 0; i < 5; i++)
 	{
 		keccak((const uint8_t *)input + len * i, len, ctx[i]->hash_state, 200);
-		cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->hash_state, (__m128i*)ctx[i]->long_state);
+		cn_explode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[i]->hash_state, (__m256i*)ctx[i]->long_state);
 	}
 
 	uint8_t* l0 = ctx[0]->long_state;
@@ -741,7 +807,7 @@ void cryptonight_penta_hash(const void* input, size_t len, void* output, crypton
 
 	for (size_t i = 0; i < 5; i++)
 	{
-		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->long_state, (__m128i*)ctx[i]->hash_state);
+		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m256i*)ctx[i]->long_state, (__m256i*)ctx[i]->hash_state);
 		keccakf((uint64_t*)ctx[i]->hash_state, 24);
 		extra_hashes[ctx[i]->hash_state[0] & 3](ctx[i]->hash_state, 200, (char*)output + 32 * i);
 	}
