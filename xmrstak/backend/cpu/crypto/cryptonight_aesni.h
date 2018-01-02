@@ -295,9 +295,9 @@ void cn_explode_scratchpad(const __m256i* input, __m256i* output)
 }
 
 template<size_t MEM, bool SOFT_AES, bool PREFETCH>
-void cn_implode_scratchpad(__m256i* input, __m256i* output)
+void cn_implode_scratchpad(const __m256i* input, __m256i* output)
 {
-	__m256i xout0, xout1, xout2, xout3, temp0;
+	__m256i xout0, xout1, xout2, xout3;
 	__m128i k0, k1, k2, k3, k4, k5, k6, k7, k8, k9;
 
 	aes_genkey<SOFT_AES>(((__m128i*)output) + 2, &k0, &k1, &k2, &k3, &k4, &k5, &k6, &k7, &k8, &k9);
@@ -312,18 +312,14 @@ void cn_implode_scratchpad(__m256i* input, __m256i* output)
 		if(PREFETCH)
 			_mm_prefetch((const char*)input + i, _MM_HINT_NTA);
 
-		temp0 = _mm256_load_si256(input);
-		xout0 = _mm256_xor_si256(temp0, xout0);
-		temp0 = _mm256_load_si256(input + 1);
-		xout1 = _mm256_xor_si256(temp0, xout1);
+		xout0 = _mm256_xor_si256(_mm256_load_si256(input), xout0);
+		xout1 = _mm256_xor_si256(_mm256_load_si256(input + 1), xout1);
 
 		if(PREFETCH)
 			_mm_prefetch((const char*)input + i + 4, _MM_HINT_NTA);
 
-		temp0 = _mm256_load_si256(input + 2);
-		xout2 = _mm256_xor_si256(temp0, xout2);
-		temp0 = _mm256_load_si256(input + 3);
-		xout3 = _mm256_xor_si256(temp0, xout3);
+		xout2 = _mm256_xor_si256(_mm256_load_si256(input + 2), xout2);
+		xout3 = _mm256_xor_si256(_mm256_load_si256(input + 3), xout3);
 
 		if(SOFT_AES)
 		{
