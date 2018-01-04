@@ -24,8 +24,8 @@ static const __constant ulong SKEIN512_256_IV[8] =
 
 #define SKEIN_INJECT_KEY(p, s)	do { \
 	p += h; \
-	p.s5 += t[s % 3]; \
-	p.s6 += t[(s + 1) % 3]; \
+	p.s5 += t[s & 3]; \
+	p.s6 += t[(s + 1) & 3]; \
 	p.s7 += s; \
 } while(0)
 
