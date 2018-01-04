@@ -718,6 +718,27 @@ __kernel void Skein(__global ulong *states, __global uint *BranchBuf, __global u
 
 #define SWAP8(x)	as_ulong(as_uchar8(x).s76543210)
 
+#define JHXOR \
+	h0h ^= input[0]; \
+	h0l ^= input[1]; \
+	h1h ^= input[2]; \
+	h1l ^= input[3]; \
+	h2h ^= input[4]; \
+	h2l ^= input[5]; \
+	h3h ^= input[6]; \
+	h3l ^= input[7]; \
+\
+	E8; \
+\
+	h4h ^= input[0]; \
+	h4l ^= input[1]; \
+	h5h ^= input[2]; \
+	h5l ^= input[3]; \
+	h6h ^= input[4]; \
+	h6l ^= input[5]; \
+	h7h ^= input[6]; \
+	h7l ^= input[7]
+
 __kernel void JH(__global ulong *states, __global uint *BranchBuf, __global uint *output, ulong Target, ulong Threads)
 {
 	const uint idx = get_global_id(0) - get_global_offset(0);
@@ -730,47 +751,27 @@ __kernel void JH(__global ulong *states, __global uint *BranchBuf, __global uint
 		sph_u64 h0h = 0xEBD3202C41A398EBUL, h0l = 0xC145B29C7BBECD92UL, h1h = 0xFAC7D4609151931CUL, h1l = 0x038A507ED6820026UL, h2h = 0x45B92677269E23A4UL, h2l = 0x77941AD4481AFBE0UL, h3h = 0x7A176B0226ABB5CDUL, h3l = 0xA82FFF0F4224F056UL;
 		sph_u64 h4h = 0x754D2E7F8996A371UL, h4l = 0x62E27DF70849141DUL, h5h = 0x948F2476F7957627UL, h5l = 0x6C29804757B6D587UL, h6h = 0x6C0D8EAC2D275E5CUL, h6l = 0x0F7A0557C6508451UL, h7h = 0xEA12247067D3E47BUL, h7l = 0x69D71CD313ABE389UL;
 		sph_u64 tmp;
-
-		for(int i = 0; i < 5; ++i)
+		
+		for(int i = 0; i < 3; ++i)
 		{
 			ulong input[8];
-
-			if(i < 3)
-			{
-				for(int x = 0; x < 8; ++x) input[x] = (states[(i << 3) + x]);
-			}
-			else if(i == 3)
-			{
-				input[0] = (states[24]);
-				input[1] = 0x80UL;
-				for(int x = 2; x < 8; ++x) input[x] = 0x00UL;
-			}
-			else
-			{
-				input[7] = 0x4006000000000000UL;
-
-				for(int x = 0; x < 7; ++x) input[x] = 0x00UL;
-			}
-
-			h0h ^= input[0];
-			h0l ^= input[1];
-			h1h ^= input[2];
-			h1l ^= input[3];
-			h2h ^= input[4];
-			h2l ^= input[5];
-			h3h ^= input[6];
-			h3l ^= input[7];
-
-			E8;
-
-			h4h ^= input[0];
-			h4l ^= input[1];
-			h5h ^= input[2];
-			h5l ^= input[3];
-			h6h ^= input[4];
-			h6l ^= input[5];
-			h7h ^= input[6];
-			h7l ^= input[7];
+			const int shifted = i << 3;
+			for(int x = 0; x < 8; ++x) input[x] = (states[shifted + x]);
+			JHXOR;
+		}
+		{
+			ulong input[8];
+			input[0] = (states[24]);
+			input[1] = 0x80UL;
+			#pragma unroll 6
+			for(int x = 2; x < 8; ++x) input[x] = 0x00UL;
+			JHXOR;
+		}
+		{
+			ulong input[8];
+			for(int x = 0; x < 7; ++x) input[x] = 0x00UL;
+			input[7] = 0x4006000000000000UL;
+			JHXOR;
 		}
 
 		//output[0] = h6h;
