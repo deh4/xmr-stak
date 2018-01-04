@@ -245,12 +245,11 @@ void minethd::work_main()
 				if ( (*((uint64_t*)(bResult + 24))) < oWork.iTarget)
 					executor::inst()->push_event(ex_event(job_result(oWork.sJobID, results[i], bResult, iThreadNo), oWork.iPoolId));
 				else
-					executor::inst()->push_event(ex_event("AMD Invalid Result", oWork.iPoolId));
+					executor::inst()->push_event(ex_event("AMD Invalid Result", pGpuCtx->deviceIdx, oWork.iPoolId));
 			}
 
 			iCount += pGpuCtx->rawIntensity;
-			using namespace std::chrono;
-			uint64_t iStamp = time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
+			uint64_t iStamp = get_timestamp_ms();
 			iHashCount.store(iCount, std::memory_order_relaxed);
 			iTimestamp.store(iStamp, std::memory_order_relaxed);
 			std::this_thread::yield();

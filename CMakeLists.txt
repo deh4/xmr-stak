@@ -1,6 +1,6 @@
 project(xmr-stak)
 
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.4.0)
 
 # enforce C++11
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -234,6 +234,7 @@ if(OpenCL_ENABLE)
             ENV AMDAPPSDKROOT
             ENV ATISTREAMSDKROOT
             ENV "PROGRAMFILES(X86)"
+            /usr
         PATH_SUFFIXES
             include
             OpenCL/common/inc
@@ -252,6 +253,7 @@ if(OpenCL_ENABLE)
         PATH_SUFFIXES
             "AMD APP/lib/x86_64"
             lib/x86_64
+            lib/x86_64-linux-gnu
             lib/x64
             OpenCL/common/lib/x64)
     # find package will use the previews searched path variables
@@ -441,7 +443,9 @@ if(CMAKE_LINK_STATIC)
     set(BUILD_SHARED_LIBRARIES OFF)
     set(DL_LIB ${CMAKE_DL_LIBS})
     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-    set(LIBS "-static-libgcc -static-libstdc++ ${LIBS}")
+    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+        set(LIBS "-static-libgcc -static-libstdc++ ${LIBS}")
+    endif()
 endif()
 
 # compile C files
@@ -518,9 +522,11 @@ endif()
 file(GLOB SRCFILES_CPP "xmrstak/cli/*.cpp")
 set_source_files_properties(${SRCFILES_CPP} PROPERTIES LANGUAGE CXX)
 
-add_executable(xmr-stak
-    ${SRCFILES_CPP}
-)
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_executable(xmr-stak ${SRCFILES_CPP} xmrstak/cli/xmr-stak.manifest)
+else()
+    add_executable(xmr-stak ${SRCFILES_CPP})
+endif()
 
 set(EXECUTABLE_OUTPUT_PATH "bin")
 set(LIBRARY_OUTPUT_PATH "bin")
