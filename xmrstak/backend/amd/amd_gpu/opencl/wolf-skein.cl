@@ -29,10 +29,10 @@ static const __constant ulong SKEIN512_256_IV[8] =
 	p.s7 += s; \
 } while(0)
 
-ulong SKEIN_ROT(uint2 x, uint y)
+ulong SKEIN_ROT(const uint2 x, const uint y)
 {
-	ulong temp1 = as_ulong(amd_bitalign(x, x.s10, 32 - y));
-	ulong temp2 = as_ulong(amd_bitalign(x.s10, x, 32 - (y - 32)));
+	const ulong temp1 = as_ulong(amd_bitalign(x, x.s10, 32 - y));
+	const ulong temp2 = as_ulong(amd_bitalign(x.s10, x, 32 - (y - 32)));
 	return *((ulong *)select((uint)(&temp2), (uint)(&temp1), y < 32));
 }
 
