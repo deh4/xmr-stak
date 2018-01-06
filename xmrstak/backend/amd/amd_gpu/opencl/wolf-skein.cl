@@ -106,7 +106,10 @@ ulong8 Skein512Block(ulong8 p, ulong8 h, ulong h8, const ulong *t)
 		h8 = tmp;
 	}
 	
-	SKEIN_INJECT_KEY(p, 18);
+	p += h;
+	p.s5 += t[0];
+	p.s6 += t[1];
+	p.s7 += 18;
 	return(p);
 }
 

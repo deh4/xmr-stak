@@ -193,15 +193,40 @@ void keccakf1600_1(ulong *st)
         bc[3] = st[3] ^ st[8] ^ st[13] ^ st[18] ^ st[23];
         bc[4] = st[4] ^ st[9] ^ st[14] ^ st[19] ^ st[24];
 		
-		#pragma unroll 1
-        for (i = 0; i < 5; ++i) {
-            t = bc[(i + 4) % 5] ^ rotate(bc[(i + 1) % 5], 1UL);
-            st[i     ] ^= t;
-            st[i +  5] ^= t;
-            st[i + 10] ^= t;
-            st[i + 15] ^= t;
-            st[i + 20] ^= t;
-        }
+		t = bc[4] ^ rotate(bc[1], 1UL);
+        st[0] ^= t;
+        st[5] ^= t;
+        st[10] ^= t;
+        st[15] ^= t;
+        st[20] ^= t;
+		
+		t = bc[0] ^ rotate(bc[2], 1UL);
+        st[1] ^= t;
+        st[6] ^= t;
+        st[11] ^= t;
+        st[16] ^= t;
+        st[21] ^= t;
+		
+		t = bc[1] ^ rotate(bc[3], 1UL);
+        st[2] ^= t;
+        st[7] ^= t;
+        st[12] ^= t;
+        st[17] ^= t;
+        st[22] ^= t;
+		
+		t = bc[2] ^ rotate(bc[4], 1UL);
+        st[3] ^= t;
+        st[8] ^= t;
+        st[13] ^= t;
+        st[18] ^= t;
+        st[23] ^= t;
+		
+		t = bc[3] ^ rotate(bc[0], 1UL);
+        st[4] ^= t;
+        st[9] ^= t;
+        st[14] ^= t;
+        st[19] ^= t;
+        st[24] ^= t;
 
         // Rho Pi
         t = st[1];
@@ -223,9 +248,11 @@ void keccakf1600_1(ulong *st)
         {	
 			ulong tmp[5];
 			
-			#pragma unroll 1
-			for(int x = 0; x < 5; ++x)
-				tmp[x] = bitselect(st[i + x] ^ st[i + ((x + 2) % 5)], st[i + x], st[i + ((x + 1) % 5)]);
+			tmp[0] = bitselect(st[i] ^ st[i + 2], st[i], st[i + 1]);
+			tmp[1] = bitselect(st[i + 1] ^ st[i + 3], st[i + 1], st[i + 2]);
+			tmp[2] = bitselect(st[i + 2] ^ st[i + 4], st[i + 2], st[i + 3]);
+			tmp[3] = bitselect(st[i + 3] ^ st[i], st[i + 3], st[i + 4]);
+			tmp[4] = bitselect(st[i + 4] ^ st[i + 1], st[i + 4], st[i]);
 			
 			#pragma unroll 1
 			for(int x = 0; x < 5; ++x) st[i + x] = tmp[x];
