@@ -24,8 +24,8 @@ static const __constant ulong SKEIN512_256_IV[8] =
 
 #define SKEIN_INJECT_KEY(p, s)	do { \
 	p += h; \
-	p.s5 += t[s % 3]; \
-	p.s6 += t[(s + 1) % 3]; \
+	p.s5 += t[s]; \
+	p.s6 += t[select(s + 1U, 0U, s == 2U)]; \
 	p.s7 += s; \
 } while(0)
 
@@ -91,15 +91,34 @@ ulong8 SkeinOddRound(ulong8 p, const ulong8 h, const ulong *t, const uint s)
 ulong8 Skein512Block(ulong8 p, ulong8 h, ulong h8, const ulong *t)
 {
 	#pragma unroll
-	for(int i = 0; i < 18; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
-		p = SkeinEvenRound(p, h, t, i);
-		++i;
+		p = SkeinEvenRound(p, h, t, 0U);
 		ulong tmp = h.s0;
 		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
 		h.s7 = h8;
 		h8 = tmp;
-		p = SkeinOddRound(p, h, t, i);
+		p = SkeinOddRound(p, h, t, 1U);
+		tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinEvenRound(p, h, t, 2U);
+		ulong tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinOddRound(p, h, t, 0U);
+		tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinEvenRound(p, h, t, 1U);
+		ulong tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinOddRound(p, h, t, 2U);
 		tmp = h.s0;
 		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
 		h.s7 = h8;
