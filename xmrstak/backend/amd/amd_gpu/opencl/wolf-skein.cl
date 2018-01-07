@@ -104,7 +104,7 @@ ulong8 Skein512Block(ulong8 p, ulong8 h, ulong h8, const ulong *t)
 		h.s7 = h8;
 		h8 = tmp;
 		p = SkeinEvenRound(p, h, t, 2U);
-		ulong tmp = h.s0;
+		tmp = h.s0;
 		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
 		h.s7 = h8;
 		h8 = tmp;
@@ -114,7 +114,7 @@ ulong8 Skein512Block(ulong8 p, ulong8 h, ulong h8, const ulong *t)
 		h.s7 = h8;
 		h8 = tmp;
 		p = SkeinEvenRound(p, h, t, 1U);
-		ulong tmp = h.s0;
+		tmp = h.s0;
 		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
 		h.s7 = h8;
 		h8 = tmp;
