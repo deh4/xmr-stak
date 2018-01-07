@@ -243,7 +243,7 @@ static HashReturn Init(hashState *state, int hashbitlen)
 			case 512: memcpy(state->x,JH512_H0,128); break;
 	  }
 
-	  return(SUCCESS);
+	  return(SUCCESSC);
 }
 
 
@@ -292,7 +292,7 @@ static HashReturn Update(hashState *state, const BitSequence *data, DataLength d
 			state->datasize_in_buffer = databitlen;
 	  }
 
-	  return(SUCCESS);
+	  return(SUCCESSC);
 }
 
 /*pad the message, process the padded block(s), truncate the hash value H to obtain the message digest*/
@@ -345,7 +345,7 @@ static HashReturn Final(hashState *state, BitSequence *hashval)
 			case 512: memcpy(hashval,(unsigned char*)state->x+64,64);     break;
 	  }
 
-	  return(SUCCESS);
+	  return(SUCCESSC);
 }
 
 /* hash a message,
@@ -360,8 +360,8 @@ HashReturn jh_hash(int hashbitlen, const BitSequence *data,DataLength databitlen
 			Init(&state, hashbitlen);
 			Update(&state, data, databitlen);
 			Final(&state, hashval);
-			return SUCCESS;
+			return SUCCESSC;
 	  }
 	  else
-			return(BAD_HASHLEN);
+			return(BAD_HASHLENC);
 }
