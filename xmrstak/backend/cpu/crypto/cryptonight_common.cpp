@@ -27,6 +27,7 @@ extern "C"
 #include "c_blake256.h"
 #include "c_jh.h"
 #include "c_skein.h"
+#include "hash.h"
 }
 #include "cryptonight.h"
 #include "cryptonight_aesni.h"
@@ -60,7 +61,7 @@ void do_blake_hash(const void* input, size_t len, char* output) {
 }
 
 void do_groestl_hash(const void* input, size_t len, char* output) {
-	groestl((const uint8_t*)input, len * 8, (uint8_t*)output);
+	groestlHash(256,(const uint8_t*)input, len * 8, (uint8_t*)output);
 }
 
 void do_jh_hash(const void* input, size_t len, char* output) {

@@ -1,60 +1,89 @@
 #ifndef __hash_h
 #define __hash_h
-/*
-#include "crypto_uint8.h"
-#include "crypto_uint32.h"
-#include "crypto_uint64.h"
-#include "crypto_hash.h" 
 
-typedef crypto_uint8 uint8_t; 
-typedef crypto_uint32 uint32_t; 
-typedef crypto_uint64 uint64_t;
-*/
-#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "brg_endian.h"
 
-#include "hash.h"
+#if defined(__GNUC__)
+#define ALIGN(x) __attribute__ ((aligned(x)))
+#elif defined(_MSC_VER)
+#define ALIGN(x)
+#elif defined(__ARMCC_VERSION)
+#define ALIGN(x) __align(x)
+#else
+#define ALIGN(x)
+#endif
+
+/* eBash API begin 
+#include "crypto_hash.h"
+#ifdef crypto_hash_BYTES
+#include <crypto_uint8.h>
+#include <crypto_uint32.h>
+#include <crypto_uint64.h>
+typedef crypto_uint8 u8;
+typedef crypto_uint32 u32;
+typedef crypto_uint64 u64;
+#endif
+eBash API end */
+
+#ifndef crypto_hash_BYTES
+#include "brg_types.h"
+#endif
 
 /* some sizes (number of bytes) */
 #define ROWS 8
 #define LENGTHFIELDLEN ROWS
 #define COLS512 8
-
+#define COLS1024 16
 #define SIZE512 (ROWS*COLS512)
+#define SIZE1024 (ROWS*COLS1024)
 
 #define ROUNDS512 10
-#define HASH_BIT_LEN 256
+#define ROUNDS1024 14
 
-#define ROTL32(v, n) ((((v)<<(n))|((v)>>(32-(n))))&li_32(ffffffff))
+#define ROTL64(a,n) ((((a)<<(n))|((a)>>(64-(n))))&(0xffffffffffffffffULL))
 
+#if (PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN)
+#define EXT_BYTE(var,n) ((u8)((u64)(var) >> (8*(7-(n)))))
+#define U64BIG(a) (a)
+#endif /* IS_BIG_ENDIAN */
 
-#define li_32(h) 0x##h##u
-#define EXT_BYTE(var,n) ((uint8_t)((uint32_t)(var) >> (8*n)))
-#define u32BIG(a)				\
-  ((ROTL32(a,8) & li_32(00FF00FF)) |		\
-   (ROTL32(a,24) & li_32(FF00FF00)))
+#if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
+#define EXT_BYTE(var,n) ((u8)((u64)(var) >> (8*n)))
+#define U64BIG(a) \
+  ((ROTL64(a, 8) & (0x000000FF000000FFULL)) | \
+   (ROTL64(a,24) & (0x0000FF000000FF00ULL)) | \
+   (ROTL64(a,40) & (0x00FF000000FF0000ULL)) | \
+   (ROTL64(a,56) & (0xFF000000FF000000ULL)))
+#endif /* IS_LITTLE_ENDIAN */
+
+enum { LONGS = SIZE1024, SHORTS = SIZE512 };
 
 
 /* NIST API begin */
+typedef unsigned char BitSequence;
+typedef unsigned long long DataLength;
+typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturnGroest;
 typedef struct {
-  uint32_t chaining[SIZE512/sizeof(uint32_t)];            /* actual state */
-  uint32_t block_counter1,
-  block_counter2;         /* message block counter(s) */
-  BitSequence buffer[SIZE512];      /* data buffer */
+  u64 *chaining ALIGN(16);            /* actual state */
+  BitSequence *buffer;      /* data buffer */
+  u64 block_counter;        /* message block counter */
   int buf_ptr;              /* data buffer pointer */
   int bits_in_last_byte;    /* no. of message bits in last byte of
 			       data buffer */
-} groestlHashState;
+  int hashbitlen;           /* output length in bits */
+  int size;                 /* LONG or SHORT */
+} hashState;
 
-/*void Init(hashState*);
-void Update(hashState*, const BitSequence*, DataLength);
-void Final(hashState*, BitSequence*); */
-void groestl(const BitSequence*, DataLength, BitSequence*);
+HashReturnGroest Init(hashState*, int);
+HashReturnGroest Update(hashState*, const BitSequence*, DataLength);
+HashReturnGroest Final(hashState*, BitSequence*);
+HashReturnGroest groestlHash(int, const BitSequence*, DataLength, BitSequence*);
 /* NIST API end   */
 
-/*
-int crypto_hash(unsigned char *out,
-		const unsigned char *in,
-		unsigned long long len);
-*/
+/* helper functions */
+void PrintHash(const BitSequence*, int);
 
 #endif /* __hash_h */
