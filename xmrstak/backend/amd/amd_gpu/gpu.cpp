@@ -245,7 +245,7 @@ size_t InitOpenCLGpu(cl_context opencl_ctx, GpuContext* ctx, const char* source_
 		return ERR_OCL_API;
 	}
 
-	ctx->InputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_ONLY, 88, NULL, &ret);
+	ctx->InputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_ONLY | CL_MEM_USE_PERSISTENT_MEM_AMD, 88, NULL, &ret);
 	if(ret != CL_SUCCESS)
 	{
 		printer::inst()->print_msg(L1,"Error %s when calling clCreateBuffer to create input buffer.", err_to_str(ret));
@@ -276,7 +276,7 @@ size_t InitOpenCLGpu(cl_context opencl_ctx, GpuContext* ctx, const char* source_
 		return ERR_OCL_API;
 	}
 
-	ctx->ExtraBuffers[1] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, 200 * g_thd, NULL, &ret);
+	ctx->ExtraBuffers[1] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, 200 * g_thd, NULL, &ret);
 	if(ret != CL_SUCCESS)
 	{
 		printer::inst()->print_msg(L1,"Error %s when calling clCreateBuffer to create hash states buffer.", err_to_str(ret));
@@ -284,7 +284,7 @@ size_t InitOpenCLGpu(cl_context opencl_ctx, GpuContext* ctx, const char* source_
 	}
 
 	// Blake-256 branches
-	ctx->ExtraBuffers[2] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+	ctx->ExtraBuffers[2] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
 	if(ret != CL_SUCCESS)
 	{
 		printer::inst()->print_msg(L1,"Error %s when calling clCreateBuffer to create Branch 0 buffer.", err_to_str(ret));
@@ -292,7 +292,7 @@ size_t InitOpenCLGpu(cl_context opencl_ctx, GpuContext* ctx, const char* source_
 	}
 
 	// Groestl-256 branches
-	ctx->ExtraBuffers[3] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+	ctx->ExtraBuffers[3] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
 	if(ret != CL_SUCCESS)
 	{
 		printer::inst()->print_msg(L1,"Error %s when calling clCreateBuffer to create Branch 1 buffer.", err_to_str(ret));
@@ -300,7 +300,7 @@ size_t InitOpenCLGpu(cl_context opencl_ctx, GpuContext* ctx, const char* source_
 	}
 
 	// JH-256 branches
-	ctx->ExtraBuffers[4] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+	ctx->ExtraBuffers[4] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
 	if(ret != CL_SUCCESS)
 	{
 		printer::inst()->print_msg(L1,"Error %s when calling clCreateBuffer to create Branch 2 buffer.", err_to_str(ret));
@@ -308,7 +308,7 @@ size_t InitOpenCLGpu(cl_context opencl_ctx, GpuContext* ctx, const char* source_
 	}
 
 	// Skein-512 branches
-	ctx->ExtraBuffers[5] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+	ctx->ExtraBuffers[5] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
 	if(ret != CL_SUCCESS)
 	{
 		printer::inst()->print_msg(L1,"Error %s when calling clCreateBuffer to create Branch 3 buffer.", err_to_str(ret));
@@ -316,7 +316,7 @@ size_t InitOpenCLGpu(cl_context opencl_ctx, GpuContext* ctx, const char* source_
 	}
 
 	// Assume we may find up to 0xFF nonces in one run - it's reasonable
-	ctx->OutputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * 0x100, NULL, &ret);
+	ctx->OutputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * 0x100, NULL, &ret);
 	if(ret != CL_SUCCESS)
 	{
 		printer::inst()->print_msg(L1,"Error %s when calling clCreateBuffer to create output buffer.", err_to_str(ret));
@@ -493,7 +493,6 @@ std::vector<GpuContext> getAMDDevices(int index)
 		{
 			GpuContext ctx;
 			std::vector<char> devNameVec(1024);
-			size_t maxMem;
 
 			if((clStatus = clGetDeviceInfo(device_list[k], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(int), &(ctx.computeUnits), NULL)) != CL_SUCCESS)
 			{
@@ -501,7 +500,7 @@ std::vector<GpuContext> getAMDDevices(int index)
 				continue;
 			}
 
-			if((clStatus = clGetDeviceInfo(device_list[k], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(size_t), &(maxMem), NULL)) != CL_SUCCESS)
+			if((clStatus = clGetDeviceInfo(device_list[k], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(size_t), &(ctx.maxAlloc), NULL)) != CL_SUCCESS)
 			{
 				printer::inst()->print_msg(L1,"WARNING: %s when calling clGetDeviceInfo to get CL_DEVICE_MAX_MEM_ALLOC_SIZE for device %u.", err_to_str(clStatus), k);
 				continue;
@@ -522,7 +521,13 @@ std::vector<GpuContext> getAMDDevices(int index)
 
 			// if environment variable GPU_SINGLE_ALLOC_PERCENT is not set we can not allocate the full memory
 			ctx.deviceIdx = k;
-			ctx.freeMem = std::min(ctx.freeMem, maxMem);
+			/*
+			* System does __not always__ report true memory left, 
+			* only the max amount we can allocate at once...
+			* It is a __hack__ to not be querying the max alloc before each
+			* and every alloc if trying to figure out the amount available.
+			*/
+			ctx.freeMem = ctx.maxAlloc * std::floor(ctx.freeMem / ctx.maxAlloc);
 			ctx.name = std::string(devNameVec.data());
 			ctx.DeviceID = device_list[k];
 			ctxVec.push_back(ctx);

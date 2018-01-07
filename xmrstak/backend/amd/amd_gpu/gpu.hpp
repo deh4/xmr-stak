@@ -4,8 +4,10 @@
 
 #if defined(__APPLE__)
 #include <OpenCL/cl.h>
+#include <OpenCL/cl_ext.h>
 #else
 #include <CL/cl.h>
+#include <CL/cl_ext.h>
 #endif
 
 #include <stdint.h>
@@ -35,6 +37,7 @@ struct GpuContext
 	cl_program Program;
 	cl_kernel Kernels[7];
 	size_t freeMem;
+	size_t maxAlloc;
 	int computeUnits;
 	std::string name;
 

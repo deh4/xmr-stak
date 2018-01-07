@@ -22,17 +22,18 @@ static const __constant ulong SKEIN512_256_IV[8] =
 	0xC36FBAF9393AD185UL, 0x3EEDBA1833EDFC13UL
 };
 
-#define SKEIN_INJECT_KEY(p, s)	do { \
+#define SKEIN_INJECT_KEY(p, s, q)	do { \
 	p += h; \
-	p.s5 += t[s % 3]; \
-	p.s6 += t[(s + 1) % 3]; \
-	p.s7 += s; \
+	p.s5 += t[s]; \
+	p.s6 += t[select(s + 1U, 0U, s == 2U)]; \
+	p.s7 += q; \
 } while(0)
 
 ulong SKEIN_ROT(const uint2 x, const uint y)
 {
-	if(y < 32) return(as_ulong(amd_bitalign(x, x.s10, 32 - y)));
-	else return(as_ulong(amd_bitalign(x.s10, x, 32 - (y - 32))));
+	const ulong temp1 = as_ulong(amd_bitalign(x, x.s10, 32 - y));
+	const ulong temp2 = as_ulong(amd_bitalign(x.s10, x, 32 - (y - 32)));
+	return *((ulong *)select((uint)(&temp2), (uint)(&temp1), y < 32));
 }
 
 void SkeinMix8(ulong4 *pv0, ulong4 *pv1, const uint rc0, const uint rc1, const uint rc2, const uint rc3)
@@ -45,9 +46,9 @@ void SkeinMix8(ulong4 *pv0, ulong4 *pv1, const uint rc0, const uint rc1, const u
 	*pv1 ^= *pv0;
 }
 
-ulong8 SkeinEvenRound(ulong8 p, const ulong8 h, const ulong *t, const uint s)
+ulong8 SkeinEvenRound(ulong8 p, const ulong8 h, const ulong *t, const uint s, const uint q)
 {
-	SKEIN_INJECT_KEY(p, s);
+	SKEIN_INJECT_KEY(p, s, q);
 	ulong4 pv0 = p.even, pv1 = p.odd;
 	
 	SkeinMix8(&pv0, &pv1, 46, 36, 19, 37);
@@ -66,9 +67,9 @@ ulong8 SkeinEvenRound(ulong8 p, const ulong8 h, const ulong *t, const uint s)
 	return(shuffle2(pv0, pv1, (ulong8)(1, 4, 2, 7, 3, 6, 0, 5)));
 }
 
-ulong8 SkeinOddRound(ulong8 p, const ulong8 h, const ulong *t, const uint s)
+ulong8 SkeinOddRound(ulong8 p, const ulong8 h, const ulong *t, const uint s, const uint q)
 {
-	SKEIN_INJECT_KEY(p, s);
+	SKEIN_INJECT_KEY(p, s, q);
     ulong4 pv0 = p.even, pv1 = p.odd;
     
 	SkeinMix8(&pv0, &pv1, 39, 30, 34, 24);
@@ -92,20 +93,47 @@ ulong8 Skein512Block(ulong8 p, ulong8 h, ulong h8, const ulong *t)
 	#pragma unroll
 	for(int i = 0; i < 18; ++i)
 	{
-		p = SkeinEvenRound(p, h, t, i);
+		p = SkeinEvenRound(p, h, t, 0U, i);
 		++i;
 		ulong tmp = h.s0;
 		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
 		h.s7 = h8;
 		h8 = tmp;
-		p = SkeinOddRound(p, h, t, i);
+		p = SkeinOddRound(p, h, t, 1U, i);
+		++i;
+		tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinEvenRound(p, h, t, 2U, i);
+		++i;
+		tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinOddRound(p, h, t, 0U, i);
+		++i;
+		tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinEvenRound(p, h, t, 1U, i);
+		++i;
+		tmp = h.s0;
+		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
+		h.s7 = h8;
+		h8 = tmp;
+		p = SkeinOddRound(p, h, t, 2U, i);
 		tmp = h.s0;
 		h = shuffle(h, (ulong8)(1, 2, 3, 4, 5, 6, 7, 0));
 		h.s7 = h8;
 		h8 = tmp;
 	}
 	
-	SKEIN_INJECT_KEY(p, 18);
+	p += h;
+	p.s5 += t[0];
+	p.s6 += t[1];
+	p.s7 += 18;
 	return(p);
 }
 
