@@ -42,6 +42,7 @@ extern "C"
 {
 	void keccak(const uint8_t *in, int inlen, uint8_t *md, int mdlen);
 	void keccakf(uint64_t st[25], int rounds);
+	void keccakff(uint64_t *st, int rounds);
 	extern void(*const extra_hashes[4])(const void *, size_t, char *);
 }
 
@@ -344,7 +345,8 @@ void cryptonight_hash(const void* input, size_t len, void* output, cryptonight_c
 
 	// Optim - 99% time boundary
 
-	keccakf((uint64_t*)ctx0->hash_state, 24);
+	//keccakf((uint64_t*)ctx0->hash_state, 24);
+	keccakff((uint64_t*)ctx0->hash_state, 24);
 	extra_hashes[ctx0->hash_state[0] & 3](ctx0->hash_state, 200, (char*)output);
 }
 
@@ -448,9 +450,9 @@ void cryptonight_double_hash(const void* input, size_t len, void* output, crypto
 
 	// Optim - 99% time boundary
 
-	keccakf((uint64_t*)ctx[0]->hash_state, 24);
+	keccakff((uint64_t*)ctx[0]->hash_state, 24);
 	extra_hashes[ctx[0]->hash_state[0] & 3](ctx[0]->hash_state, 200, (char*)output);
-	keccakf((uint64_t*)ctx[1]->hash_state, 24);
+	keccakff((uint64_t*)ctx[1]->hash_state, 24);
 	extra_hashes[ctx[1]->hash_state[0] & 3](ctx[1]->hash_state, 200, (char*)output + 32);
 }
 
@@ -552,7 +554,7 @@ void cryptonight_triple_hash(const void* input, size_t len, void* output, crypto
 	for (size_t i = 0; i < 3; i++)
 	{
 		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->long_state, (__m128i*)ctx[i]->hash_state);
-		keccakf((uint64_t*)ctx[i]->hash_state, 24);
+		keccakff((uint64_t*)ctx[i]->hash_state, 24);
 		extra_hashes[ctx[i]->hash_state[0] & 3](ctx[i]->hash_state, 200, (char*)output + 32 * i);
 	}
 }
@@ -640,7 +642,7 @@ void cryptonight_quad_hash(const void* input, size_t len, void* output, cryptoni
 	for (size_t i = 0; i < 4; i++)
 	{
 		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->long_state, (__m128i*)ctx[i]->hash_state);
-		keccakf((uint64_t*)ctx[i]->hash_state, 24);
+		keccakff((uint64_t*)ctx[i]->hash_state, 24);
 		extra_hashes[ctx[i]->hash_state[0] & 3](ctx[i]->hash_state, 200, (char*)output + 32 * i);
 	}
 }
@@ -741,7 +743,7 @@ void cryptonight_penta_hash(const void* input, size_t len, void* output, crypton
 	for (size_t i = 0; i < 5; i++)
 	{
 		cn_implode_scratchpad<MEM, SOFT_AES, PREFETCH>((__m128i*)ctx[i]->long_state, (__m128i*)ctx[i]->hash_state);
-		keccakf((uint64_t*)ctx[i]->hash_state, 24);
+		keccakff((uint64_t*)ctx[i]->hash_state, 24);
 		extra_hashes[ctx[i]->hash_state[0] & 3](ctx[i]->hash_state, 200, (char*)output + 32 * i);
 	}
 }
